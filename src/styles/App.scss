@@ -2,7 +2,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  background: #222;
+  background-color: #222;
 }
 .content {
   width: 100%;
@@ -28,18 +28,27 @@ html, body {
   height: 100%;
   overflow: hidden;
 
-  background: #ddd;
+  background-color: #ddd;
 
   @at-root {
-    .img-firgue {
+    .img-figure {
       position: absolute;
+
       width: 300px;
       height: 340px;
       margin: 0;
       padding: 30px;
       background: #fff;
+      cursor: pointer;
 
       box-sizing: border-box;
+      transform-origin: 0 50% 0;
+      transform-style: preserve-3d;
+      transition: transform .6s ease-in-out, left .6s ease-in-out, top .6s ease-in-out;
+
+      &.is-inverse {
+        transform: translate(300px) rotateY(180deg);
+      }
 
       img {
         width: 240px;
@@ -55,6 +64,32 @@ html, body {
 
         color: #a7a0a2;
         font-size: 16px;
+      }
+
+      .img-back {
+        position: absolute;
+        left: 0;
+        top: 0;
+
+        width: 100%;
+        height: 100%;
+        padding: 50px 30px;
+        overflow: auto;
+        color: #a7a0a2;
+        font-size: 22px;
+        line-height: 1.25;
+        text-align: left;
+
+        background-color: #fff;
+        cursor: pointer;
+
+        box-sizing: border-box;
+        transform: rotateY(180deg) translateZ(1px);
+        backface-visibility: hidden;
+
+        p {
+          margin: 0;
+        }
       }
     }
   }

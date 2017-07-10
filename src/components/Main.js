@@ -37,29 +37,46 @@ let getRangeRandom = function (low, high) {
 * 获取正负范围内的旋转角度值
  */
 let getDegRandom = function (range) {
-  return (Math.random() < 0.5 ? "" : "-") + Math.floor(Math.random() * range);
+  return (Math.random() < 0.5 ? '' : '-') + Math.floor(Math.random() * range);
 }
 
 class ImageFigure extends React.Component {
-  render() {
-    var styleObj = {};
+  constructor(props) {
+    super(props);
 
-    if (this.props.arrage.pos) {
-      styleObj = this.props.arrage.pos;
+    this.state ={};
+    this.handleClick = this.handleClick.bind(this);
+  }
+  handleClick(event) {
+    this.props.inverse();
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  render() {
+    let styleObj = {},
+        imgMsg = this.props.imgMsg;
+
+    if (imgMsg.pos) {
+      styleObj = imgMsg.pos;
     }
-    if (this.props.arrage.rotate) {
-      (['-moz-', '-webkit-', '-ms-', '']).forEach(function (value) {
-        styleObj[value + 'transform'] = 'rotate(' + this.props.arrage.rotate +"deg)";
+    if (imgMsg.rotate) {
+      (['Moz', 'Webkit', 'Ms', '']).forEach(function (value) {
+        styleObj[value + 'Transform'] = 'rotate(' + imgMsg.rotate +'deg)';
       }.bind(this));
     }
 
+    let imageFigureClassName = 'img-figure';
+        imageFigureClassName += imgMsg.isInverse ? ' is-inverse' : '';
     return (
-      <figure className="img-firgue" style={styleObj}>
+      <figure className={imageFigureClassName} style={styleObj} onClick={this.handleClick}>
         <img src={this.props.data.imageURL}
              alt={this.props.data.title}
         />
         <figcaption>
           <h2 className="img-title">{this.props.data.title}</h2>
+          <div className="img-back" onClick={this.handleClick}>
+            <p>{this.props.data.description}</p>
+          </div>
         </figcaption>
       </figure>
     );
@@ -85,9 +102,37 @@ class GalleryByReactApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      imagesArrageArr: []
+      imagesArrageArr: [
+        /*{
+          pos: {                     //图片相对位置
+            left: 0,
+            yop: 0
+          },
+          rotate: 0,                 //图片旋转角度
+          isInverse: false           //图片是否翻转
+        }*/
+      ]
     };
   }
+
+  inverse(index) {
+    return function () {
+      let imagesArrageArr = this.state.imagesArrageArr;
+
+      imagesArrageArr[index].isInverse = !imagesArrageArr[index].isInverse;
+
+      this.setState({
+        imagesArrageArr: imagesArrageArr
+      });
+    }.bind(this);
+  }
+
+
+  /**
+   * 排布图片信息
+   * @param  {number} centerIndex 位于中心的图片位置
+   * @return {}
+   */
   _reArrage(centerIndex) {
     var imagesArrageArr = this.state.imagesArrageArr,
         Constant = this.Constant,
@@ -108,19 +153,25 @@ class GalleryByReactApp extends React.Component {
         // console.log(topImageNum);
 
     //居中图片的状态信息
-    centerImageArrageArr[0].pos = centerPos;
-    centerImageArrageArr[0].rotate = 0;   //居中图片不旋转
+    centerImageArrageArr[0] = {
+      pos: centerPos,
+      rotate: 0,          //居中图片不旋转
+      isInverse: false
+    }
 
     //上方图片信息
     topImageSpliceIndex = Math.floor(Math.random() * (imagesArrageArr.length - topImageNum));
     topImageArragerArr = imagesArrageArr.splice(topImageSpliceIndex, topImageNum);
 
     topImageArragerArr.forEach(function(value, index) {
-      topImageArragerArr[index].pos = {
-        left: getRangeRandom(vPosRangeX[0], vPosRangeX[1]),
-        top: getRangeRandom(vPosRangeY[0], vPosRangeY[1])
-      };
-      topImageArragerArr[index].rotate = getDegRandom(30);
+      topImageArragerArr[index] = {
+        pos: {
+          left: getRangeRandom(vPosRangeX[0], vPosRangeX[1]),
+          top: getRangeRandom(vPosRangeY[0], vPosRangeY[1])
+        },
+        rotate: getRangeRandom(30),           //图片旋转角度为正负30度
+        isInverse: false
+      }
     });
 
     //两侧图片信息
@@ -133,11 +184,14 @@ class GalleryByReactApp extends React.Component {
         hPosRangeX = hPosRangeRightX;
       }
 
-      imagesArrageArr[i].pos = {
-        top: getRangeRandom(hPosRangeY[0], hPosRangeY[1]),
-        left: getRangeRandom(hPosRangeX[0], hPosRangeX[1])
-      };
-      imagesArrageArr[i].rotate = getDegRandom(30);
+      imagesArrageArr[i] = {
+        pos: {
+          top: getRangeRandom(hPosRangeY[0], hPosRangeY[1]),
+          left: getRangeRandom(hPosRangeX[0], hPosRangeX[1])
+        },
+        rotate: getDegRandom(30),
+        isInverse: false
+      }
     }
 
     //合并上方图片
@@ -198,12 +252,14 @@ class GalleryByReactApp extends React.Component {
             left: 0,
             top: 0
           },
-          rotate: 0
+          rotate: 0,
+          isInverse: false
         };
       }
 
       imageFiguers.push(<ImageFigure data={value} key={index}
-                          ref={'imageFigure' + index} arrage={this.state.imagesArrageArr[index]} />);
+                          ref={'imageFigure' + index} imgMsg={this.state.imagesArrageArr[index]}
+                          inverse={this.inverse(index)}/>);
     }.bind(this));
 
     return (
