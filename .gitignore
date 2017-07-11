@@ -32,8 +32,6 @@ bower_components/
 # IDE/Editor data
 .idea
 
-
-node_modules/
 .tmp
 dist
 /src/main.js
