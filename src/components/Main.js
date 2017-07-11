@@ -48,7 +48,11 @@ class ImageFigure extends React.Component {
     this.handleClick = this.handleClick.bind(this);
   }
   handleClick(event) {
-    this.props.inverse();
+    if (this.props.imgMsg.isCenter) {
+      this.props.inverse();
+    } else {
+      this.props.center();
+    }
     event.preventDefault();
     event.stopPropagation();
   }
@@ -60,10 +64,14 @@ class ImageFigure extends React.Component {
       styleObj = imgMsg.pos;
     }
     if (imgMsg.rotate) {
-      (['Moz', 'Webkit', 'Ms', '']).forEach(function (value) {
-        styleObj[value + 'Transform'] = 'rotate(' + imgMsg.rotate +'deg)';
+      (['MozTransform', 'WebkitTransform', 'msTransform', 'transform']).forEach(function (value) {
+        styleObj[value] = 'rotate(' + imgMsg.rotate +'deg)';
       }.bind(this));
     }
+    if (this.props.imgMsg.isCenter) {
+      styleObj.zIndex = 11;
+    }
+
 
     let imageFigureClassName = 'img-figure';
         imageFigureClassName += imgMsg.isInverse ? ' is-inverse' : '';
@@ -79,6 +87,42 @@ class ImageFigure extends React.Component {
           </div>
         </figcaption>
       </figure>
+    );
+  }
+}
+
+class ControllerFigure extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {};
+
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick(event) {
+    if (this.props.imgMsg.isCenter) {
+      this.props.inverse();
+    } else {
+      this.props.center();
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  render() {
+
+    let controllerFigureClassName = 'controller-figure';
+    if (this.props.imgMsg.isCenter) {
+      controllerFigureClassName += ' is-center';
+
+      if (this.props.imgMsg.isInverse) {
+        controllerFigureClassName += ' is-inverse';
+      }
+    }
+
+    return (
+      <span className={controllerFigureClassName} onClick={this.handleClick}></span>
     );
   }
 }
@@ -109,12 +153,18 @@ class GalleryByReactApp extends React.Component {
             yop: 0
           },
           rotate: 0,                 //图片旋转角度
-          isInverse: false           //图片是否翻转
+          isInverse: false,          //图片是否翻转
+          isCenter: false            //图片是否居中
         }*/
       ]
     };
   }
 
+  /**
+   * 翻转图片
+   * @param  {num} index 当前被执行翻转图片的index值
+   * @return {function}       返回真正被执行的闭包函数
+   */
   inverse(index) {
     return function () {
       let imagesArrageArr = this.state.imagesArrageArr;
@@ -127,6 +177,11 @@ class GalleryByReactApp extends React.Component {
     }.bind(this);
   }
 
+  center(index) {
+    return function () {
+      this._reArrage(index);
+    }.bind(this);
+  }
 
   /**
    * 排布图片信息
@@ -156,7 +211,8 @@ class GalleryByReactApp extends React.Component {
     centerImageArrageArr[0] = {
       pos: centerPos,
       rotate: 0,          //居中图片不旋转
-      isInverse: false
+      isInverse: false,
+      isCenter: true
     }
 
     //上方图片信息
@@ -170,7 +226,8 @@ class GalleryByReactApp extends React.Component {
           top: getRangeRandom(vPosRangeY[0], vPosRangeY[1])
         },
         rotate: getRangeRandom(30),           //图片旋转角度为正负30度
-        isInverse: false
+        isInverse: false,
+        isCenter: false
       }
     });
 
@@ -190,7 +247,8 @@ class GalleryByReactApp extends React.Component {
           left: getRangeRandom(hPosRangeX[0], hPosRangeX[1])
         },
         rotate: getDegRandom(30),
-        isInverse: false
+        isInverse: false,
+        isCenter: false
       }
     }
 
@@ -253,13 +311,17 @@ class GalleryByReactApp extends React.Component {
             top: 0
           },
           rotate: 0,
-          isInverse: false
+          isInverse: false,
+          isCenter: false
         };
       }
 
       imageFiguers.push(<ImageFigure data={value} key={index}
                           ref={'imageFigure' + index} imgMsg={this.state.imagesArrageArr[index]}
-                          inverse={this.inverse(index)}/>);
+                          inverse={this.inverse(index)} center={this.center(index)}/>);
+
+      controllers.push(<ControllerFigure key={index} imgMsg={this.state.imagesArrageArr[index]}
+                          inverse={this.inverse(index)} center={this.center(index)}/>)
     }.bind(this));
 
     return (

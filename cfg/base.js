@@ -42,7 +42,7 @@ module.exports = {
   postcss: function () {
     return [
       require('autoprefixer')({
-        browsers: ['last 2 versions', 'ie >= 8']
+        browsers: ['last 2 versions', 'ie >= 8', 'firefox >= 15']
       })
     ];
   },
